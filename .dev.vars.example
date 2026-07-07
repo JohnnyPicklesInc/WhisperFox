@@ -9,10 +9,7 @@
 # hourly and self-erase. Replace with a long random value in production.
 ROOT_PEPPER=dev-only-pepper-change-me-0123456789abcdefghijklmnop
 
-# Cloudflare Turnstile secret. This is the official "always passes" TEST key,
-# and the Worker also skips the network call for any 1x0000... test secret so
-# local dev works offline. Swap for your real secret in production.
-TURNSTILE_SECRET=1x0000000000000000000000000000000AA
-
-# Optional: comma-separated API keys; Bearer-auth requests skip Turnstile.
+# Optional: comma-separated API keys. A wrong Bearer key is rejected (403);
+# an absent one is fine. Abuse protection is a Cloudflare edge rate-limit rule
+# on /api/create plus Bot Fight Mode, not a per-request secret.
 API_KEYS=dev-cli-key-1

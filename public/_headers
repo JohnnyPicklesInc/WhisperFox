@@ -1,17 +1,9 @@
-# Strict baseline for every page. No third-party scripts anywhere — the reveal
-# page in particular must never load foreign JS next to a decrypted secret.
+# Strict baseline for every page, including the create page. Every script is
+# first-party — no third-party JS anywhere — so a single strict CSP covers the
+# whole site. The reveal page in particular must never load foreign JS next to
+# a decrypted secret.
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   X-Frame-Options: DENY
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
-
-# The create page is the ONLY page allowed to load the Turnstile widget.
-# "!" detaches the baseline CSP inherited from /* — without it, Pages sends
-# BOTH headers and browsers enforce the stricter one, blocking Turnstile.
-/
-  ! Content-Security-Policy
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'
-/index.html
-  ! Content-Security-Policy
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'

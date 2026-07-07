@@ -2,8 +2,8 @@ name = "whisperfox"
 compatibility_date = "2024-11-01"
 pages_build_output_dir = "public"
 
-# Non-secret config. Secrets (ROOT_PEPPER, TURNSTILE_SECRET) come from
-# `.dev.vars` locally and `wrangler pages secret put <NAME>` in production.
+# Non-secret config. Secrets (ROOT_PEPPER) come from `.dev.vars` locally and
+# `wrangler pages secret put <NAME>` in production.
 [vars]
 # Leave empty to serve a built-in first-party "house" ad. Set to your
 # EthicalAds publisher id to serve real (privacy-first, server-fetched) ads.

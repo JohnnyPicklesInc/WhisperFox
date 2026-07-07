@@ -65,10 +65,10 @@
             We do not add logging of our own.
           </li>
           <li>
-            <b>Bot check (Cloudflare Turnstile).</b>
-            The create page runs Cloudflare's Turnstile to stop automated abuse. It is the
-            only third-party script anywhere on the site, and it never appears on the page
-            that displays a decrypted message.
+            <b>Abuse protection (Cloudflare edge).</b>
+            Automated abuse of the create endpoint is stopped by a Cloudflare rate-limit
+            rule at the network edge. It runs no script in your browser and sets no
+            cookies — there is no third-party JavaScript anywhere on the site.
           </li>
           <li>
             <b>The ad (EthicalAds).</b>

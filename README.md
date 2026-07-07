@@ -53,7 +53,7 @@ public/            static site (Cloudflare Pages)
 functions/         Cloudflare Pages Functions (the "Worker")
   _lib.js          server crypto: hourly KV root lifecycle, sign/verify, share, burn tombstones
   _http.js         shared JSON response helper
-  api/create.js        POST /api/create   (Turnstile or API-key auth)
+  api/create.js        POST /api/create   (edge rate-limit; optional API-key auth)
   api/share/[id].js    GET  /api/share/:id
   api/ad.js            GET  /api/ad   (server-side EthicalAds fetch, house fallback)
 scripts/
@@ -73,10 +73,9 @@ npm run smoke         # HTTP round-trip against the running dev server
 ```
 
 Copy `.dev.vars.example` to `.dev.vars` (which is gitignored). It carries a dev
-`ROOT_PEPPER`, the official Turnstile always-pass test secret, and a dev API
-key, so the project runs out of the box (the create endpoint also skips the
-Turnstile network call for any `1x0000…` test secret). The create page uses the
-Turnstile test site key `1x00000000000000000000AA`.
+`ROOT_PEPPER` and a dev API key, so the project runs out of the box. There is no
+CAPTCHA — `/api/create` is open locally and is protected in production by a
+Cloudflare edge rate-limit rule (see the production checklist below).
 
 ## Deploy (Cloudflare Pages)
 
@@ -84,28 +83,24 @@ Turnstile test site key `1x00000000000000000000AA`.
 wrangler pages project create whisperfox
 wrangler kv namespace create whisperfox-roots   # paste the id into wrangler.toml [[kv_namespaces]]
 wrangler pages secret put ROOT_PEPPER        # a long random string (32+ chars)
-wrangler pages secret put TURNSTILE_SECRET   # your real Turnstile secret
 # optional: set ETHICALADS_PUBLISHER in wrangler.toml [vars]
 npm run deploy
 ```
 
 ### Production checklist
 
-- **Turnstile — both halves, or the captcha is off.** Create a widget in the
-  Cloudflare dashboard for your production domain, then (1) replace the test
-  site key `1x00000000000000000000AA` in `public/index.html` with the real
-  one, and (2) `wrangler pages secret put TURNSTILE_SECRET`. The Worker
-  deliberately skips verification for any `1x0000…` test secret, so shipping
-  the test keys means `/api/create` accepts bots.
+- **Abuse protection — this is required, there is no CAPTCHA.** `/api/create`
+  is open by default, so add a Cloudflare WAF **rate-limiting rule** before you
+  announce the site (one rule is included on the free plan): match
+  `starts_with(http.request.uri.path, "/api/")`, limit ~30 requests per minute
+  per IP, action Block. Optionally add a tighter rule for `/api/create`
+  specifically. Also enable **Bot Fight Mode** (Security → Bots) for bot
+  heuristics. This covers both create-flood cost and phishing/spam link farms —
+  each well-formed share/ad request also costs a KV read (free tier: 100k/day)
+  or an outbound fetch, so the `/api/*` rule protects those too.
 - **`ROOT_PEPPER`**: set a long random production value; never reuse the
   `.dev.vars` one.
-- **Rate limiting**: `/api/share` and `/api/ad` have no captcha; each
-  well-formed share request costs a KV read (free tier: 100k/day) and each ad
-  request an outbound fetch. Add a WAF rate-limiting rule (one is included on
-  the free plan): match `starts_with(http.request.uri.path, "/api/")`, limit
-  ~30 requests per minute per IP, action Block.
-- **Custom domain**: attach it to the Pages project and list the same domain
-  in the Turnstile widget settings.
+- **Custom domain**: attach it to the Pages project.
 - **Ads**: apply at [ethicalads.io](https://www.ethicalads.io/publishers/) —
   approval requires a live site with real traffic and a privacy policy
   (`public/privacy.html`). Once approved, set `ETHICALADS_PUBLISHER` in
@@ -119,10 +114,11 @@ npm run deploy
 
 ## API and CLI
 
-`POST /api/create` normally requires a Turnstile token, which scripts don't
-have. Set an API key server-side and automated callers can authenticate with
-a Bearer header instead (a presented-but-wrong key is rejected with 403; it
-never falls back to the captcha path):
+`POST /api/create` needs no token — it's open and rate-limited at the edge, so
+scripts can call it directly. If you want authenticated callers to be exempt
+from the rate limit (configure the exemption in your WAF rule), set an API key
+server-side and send it as a Bearer header; a presented-but-wrong key is
+rejected with 403:
 
 ```bash
 wrangler pages secret put API_KEYS    # comma-separated list of long random strings
@@ -148,8 +144,8 @@ node scripts/cli.mjs "the wifi password is hunter2" --ttl 3600 --burn \
 echo "or pipe it in" | node scripts/cli.mjs --url https://your-domain --key "$WHISPERFOX_API_KEY"
 ```
 
-Against local dev (`npm run dev`) no key is needed — the test Turnstile secret
-accepts everything.
+Against local dev (`npm run dev`) no key is needed — `/api/create` is open and
+there is no rate limit locally.
 
 ## Key rotation
 

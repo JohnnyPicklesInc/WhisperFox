@@ -16,7 +16,7 @@ const check = (n, c) => (c ? (pass++, console.log(`  ok   ${n}`)) : (fail++, con
 const cr = await fetch(`${BASE}/api/create`, {
   method: 'POST',
   headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ ttl: 120, turnstileToken: 'dev' }),
+  body: JSON.stringify({ ttl: 120 }),
 });
 check('POST /api/create 200', cr.status === 200);
 const { id, serverShare } = await cr.json();
@@ -42,17 +42,17 @@ check('bogus id -> 410', bad.status === 410);
 // 5) ttl bounds
 const badTtl = await fetch(`${BASE}/api/create`, {
   method: 'POST', headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ ttl: 5, turnstileToken: 'dev' }),
+  body: JSON.stringify({ ttl: 5 }),
 });
 check('ttl=5 rejected -> 400', badTtl.status === 400);
 const maxTtl = await fetch(`${BASE}/api/create`, {
   method: 'POST', headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ ttl: 86400, turnstileToken: 'dev' }),
+  body: JSON.stringify({ ttl: 86400 }),
 });
 check('ttl=86400 (24h) accepted -> 200', maxTtl.status === 200);
 const overTtl = await fetch(`${BASE}/api/create`, {
   method: 'POST', headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ ttl: 86401, turnstileToken: 'dev' }),
+  body: JSON.stringify({ ttl: 86401 }),
 });
 check('ttl=86401 rejected -> 400', overTtl.status === 400);
 
@@ -61,7 +61,7 @@ check('ttl=86401 rejected -> 400', overTtl.status === 400);
 // eventually consistent, so this proves the logic, not the global race.
 const crB = await fetch(`${BASE}/api/create`, {
   method: 'POST', headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ ttl: 120, burn: true, turnstileToken: 'dev' }),
+  body: JSON.stringify({ ttl: 120, burn: true }),
 });
 const { id: burnId } = await crB.json();
 check('burn create returns flagged id', crB.status === 200 && burnId.split('.')[4] === 'b');

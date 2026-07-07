@@ -42,27 +42,6 @@ if (!webCryptoAvailable()) {
   gen.disabled = true;
 }
 
-// Turnstile token is defined globally in the HTML head, before api.js loads,
-// to avoid a race condition where api.js renders the widget before this module
-// loads and has a chance to define the callback. This helper waits for the
-// token if the widget is still solving.
-async function waitForTurnstileToken(timeoutMs = 12000) {
-  if (window.turnstileToken) return window.turnstileToken;
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      window.removeEventListener('turnstile-token', onToken);
-      reject(new Error('Captcha did not complete — please try again.'));
-    }, timeoutMs);
-    function onToken() {
-      if (!window.turnstileToken) return; // expired/error clears it; wait for timeout or new solve
-      clearTimeout(timer);
-      window.removeEventListener('turnstile-token', onToken);
-      resolve(window.turnstileToken);
-    }
-    window.addEventListener('turnstile-token', onToken);
-  });
-}
-
 function fmtTtl(minutes) {
   if (minutes < 60) return `${minutes} min`;
   const h = minutes / 60;
@@ -154,16 +133,14 @@ gen.addEventListener('click', async () => {
   }
 
   gen.disabled = true;
-  gen.textContent = 'Encrypting…';
+  gen.textContent = 'Creating link…';
   try {
-    await waitForTurnstileToken();
-    gen.textContent = 'Creating link…';
     const ttlSec = Math.min(TTL_MAX_SEC, Math.max(TTL_MIN_SEC, ttlMinutes() * 60));
 
     const res = await fetch('/api/create', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ ttl: ttlSec, burn: burn.checked, turnstileToken: window.turnstileToken }),
+      body: JSON.stringify({ ttl: ttlSec, burn: burn.checked }),
     });
     if (!res.ok) {
       const e = await res.json().catch(() => ({}));
@@ -214,10 +191,6 @@ gen.addEventListener('click', async () => {
   } finally {
     gen.disabled = false;
     gen.textContent = 'Generate secure link';
-    if (typeof window.turnstile?.reset === 'function') {
-      window.turnstile.reset();
-      window.turnstileToken = '';
-    }
   }
 });
 

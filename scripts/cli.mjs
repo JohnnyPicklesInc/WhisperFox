@@ -8,9 +8,10 @@
  *   node scripts/cli.mjs "psst" --burn --phrase blue-otter-lamp \
  *     --url https://whisperfox.example --key $WHISPERFOX_API_KEY
  *
- * Against a production deploy with Turnstile enabled, --key is required
- * (set API_KEYS server-side; see README). Prints ONLY the link to stdout —
- * pipe it wherever you like; diagnostics go to stderr.
+ * The endpoint is rate-limited at the Cloudflare edge, not gated by a CAPTCHA,
+ * so no token is needed; pass --key only if you've set API_KEYS server-side.
+ * Prints ONLY the link to stdout — pipe it wherever you like; diagnostics go
+ * to stderr.
  *
  * Requires Node >= 19 (global fetch + Web Crypto), same as the selftest.
  */
@@ -54,9 +55,7 @@ if (opts.key) headers.authorization = `Bearer ${opts.key}`;
 const res = await fetch(`${opts.url}/api/create`, {
   method: 'POST',
   headers,
-  // turnstileToken satisfies dev/test-secret setups; production either takes
-  // the Bearer key or rejects this request.
-  body: JSON.stringify({ ttl: Number(opts.ttl), burn: opts.burn, turnstileToken: 'cli' }),
+  body: JSON.stringify({ ttl: Number(opts.ttl), burn: opts.burn }),
 });
 if (!res.ok) {
   const e = await res.json().catch(() => ({}));

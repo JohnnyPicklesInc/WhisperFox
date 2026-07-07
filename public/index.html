@@ -13,13 +13,6 @@
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
     <link rel="stylesheet" href="/style.css" />
-    <!-- Bootstrap Turnstile callbacks BEFORE loading api.js. External file (not
-         inline) to comply with CSP script-src 'self' — inlining would require
-         'unsafe-inline' or a hash and would make maintenance fragile. -->
-    <script src="/turnstile-bootstrap.js"></script>
-    <!-- Turnstile: loaded ONLY on this create page (see _headers CSP). Uses the
-         official always-pass TEST site key for local dev; swap in production. -->
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   </head>
   <body>
     <main class="card">
@@ -57,12 +50,6 @@
             <span>Burn after first read <span class="opt">— the link stops working the moment it's opened</span></span>
           </label>
         </div>
-
-        <!-- No id="turnstile": an element id creates window.turnstile, which
-             Cloudflare's api.js mistakes for an already-loaded script and then
-             refuses to initialize. Turnstile auto-renders by the class.
-             Callbacks: success → onTurnstile, error/expired → onTurnstileError/onTurnstileExpired. -->
-        <div class="cf-turnstile" data-sitekey="1x00000000000000000000AA" data-callback="onTurnstile" data-error-callback="onTurnstileError" data-expired-callback="onTurnstileExpired"></div>
 
         <button id="gen" class="primary">Generate secure link</button>
         <p id="err" class="err" role="alert"></p>

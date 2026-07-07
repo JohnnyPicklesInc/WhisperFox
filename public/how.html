@@ -182,10 +182,12 @@
         <details>
           <summary>Do I need an account? What about tracking?</summary>
           <p>
-            No accounts, no sign-up, no cookies for tracking. The only third-party
-            component anywhere is Cloudflare's Turnstile bot-check on the create page,
-            which exists to stop automated abuse. The site is funded by the single ad you
-            see, served first-party as described above.
+            No accounts, no sign-up, no cookies for tracking. Every script on the
+            site is first-party — there's no bot-check widget or other third-party
+            JavaScript. Automated abuse is stopped at the Cloudflare edge (a
+            rate-limit on the create endpoint), which never runs code in your
+            browser. The site is funded by the single ad you see, served first-party
+            as described above.
           </p>
         </details>
 
