@@ -1,0 +1,2 @@
+# No rewrites needed: the reveal page is served directly at /view, and the whole
+# payload (id + crypto) rides in the URL #fragment, so nothing can strip it.

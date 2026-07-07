@@ -1,0 +1,248 @@
+/**
+ * Create page: requests a signed id + server key-share from /api/create,
+ * encrypts the message locally, and assembles the
+ * /view#<id>~<iv.salt.urlKeyPart.ct> link.
+ */
+import { b64u, unb64u, xor, randomBytes, pbkdf2, aesEncrypt, webCryptoAvailable } from '/crypto.js';
+import { renderAd } from '/ad.js';
+import qrcodegen from '/vendor/qrcodegen.js';
+
+const MAX = 500;
+// Mirrors TTL_MIN/TTL_MAX in functions/_lib.js (the client cannot import
+// server code across the deploy boundary).
+const TTL_MIN_SEC = 60;
+const TTL_MAX_SEC = 86400;
+// The slider is an index into these steps (minutes); keep in sync with the
+// range input's min/max in index.html.
+const STEPS = [5, 15, 30, 60, 240, 720, 1440];
+const $ = (s) => document.querySelector(s);
+
+const msg = $('#msg');
+const count = $('#count');
+const ttl = $('#ttl');
+const ttlLabel = $('#ttlLabel');
+const phrase = $('#phrase');
+const usePhrase = $('#usePhrase');
+const phraseRow = $('#phraseRow');
+const phraseWarn = $('#phraseWarn');
+const burn = $('#burn');
+const gen = $('#gen');
+const compose = $('#compose');
+const out = $('#out');
+const newMsg = $('#newMsg');
+const shareHint = $('#shareHint');
+const qrWrap = $('#qrWrap');
+const link = $('#link');
+const copy = $('#copy');
+const err = $('#err');
+
+// crypto.subtle requires a secure context; disable the form when unavailable.
+if (!webCryptoAvailable()) {
+  err.textContent = 'Encryption is disabled on insecure connections. Open this page over HTTPS (or localhost).';
+  gen.disabled = true;
+}
+
+// Turnstile token is defined globally in the HTML head, before api.js loads,
+// to avoid a race condition where api.js renders the widget before this module
+// loads and has a chance to define the callback. This helper waits for the
+// token if the widget is still solving.
+async function waitForTurnstileToken(timeoutMs = 12000) {
+  if (window.turnstileToken) return window.turnstileToken;
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      window.removeEventListener('turnstile-token', onToken);
+      reject(new Error('Captcha did not complete — please try again.'));
+    }, timeoutMs);
+    function onToken() {
+      if (!window.turnstileToken) return; // expired/error clears it; wait for timeout or new solve
+      clearTimeout(timer);
+      window.removeEventListener('turnstile-token', onToken);
+      resolve(window.turnstileToken);
+    }
+    window.addEventListener('turnstile-token', onToken);
+  });
+}
+
+function fmtTtl(minutes) {
+  if (minutes < 60) return `${minutes} min`;
+  const h = minutes / 60;
+  return h === 1 ? '1 hour' : `${h} hours`;
+}
+
+/** Selected TTL in minutes: the slider value is an index into STEPS. */
+function ttlMinutes() {
+  const idx = Math.min(STEPS.length - 1, Math.max(0, Number(ttl.value) || 0));
+  return STEPS[idx];
+}
+
+// Past ~1800 chars a QR gets too dense to scan reliably (and encodeText
+// throws past ~2950); show nothing rather than an unscannable smudge.
+const QR_MAX_CHARS = 1800;
+
+/**
+ * Render the link as an inline SVG QR code, entirely in-browser — the link
+ * contains key material, so it must never be sent to a QR image service.
+ * @param {string} text The full share link.
+ */
+function renderQr(text) {
+  qrWrap.textContent = '';
+  qrWrap.hidden = true;
+  if (text.length > QR_MAX_CHARS) return;
+  let qr;
+  try {
+    qr = qrcodegen.QrCode.encodeText(text, qrcodegen.QrCode.Ecc.LOW);
+  } catch {
+    return;
+  }
+  const border = 2;
+  const size = qr.size + border * 2;
+  let path = '';
+  for (let y = 0; y < qr.size; y++) {
+    for (let x = 0; x < qr.size; x++) {
+      if (qr.getModule(x, y)) path += `M${x + border},${y + border}h1v1h-1z`;
+    }
+  }
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
+  svg.setAttribute('shape-rendering', 'crispEdges');
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', 'QR code for the secure link');
+  const bg = document.createElementNS(NS, 'rect');
+  bg.setAttribute('width', String(size));
+  bg.setAttribute('height', String(size));
+  bg.setAttribute('fill', '#ffffff');
+  const fg = document.createElementNS(NS, 'path');
+  fg.setAttribute('d', path);
+  fg.setAttribute('fill', '#0b1020');
+  svg.appendChild(bg);
+  svg.appendChild(fg);
+  qrWrap.appendChild(svg);
+  qrWrap.hidden = false;
+}
+
+msg.addEventListener('input', () => {
+  count.textContent = `${msg.value.length}/${MAX}`;
+  count.classList.toggle('over', msg.value.length > MAX);
+});
+ttl.addEventListener('input', () => {
+  ttlLabel.textContent = fmtTtl(ttlMinutes());
+});
+ttlLabel.textContent = fmtTtl(ttlMinutes());
+
+usePhrase.addEventListener('change', () => {
+  phraseRow.hidden = !usePhrase.checked;
+  phraseWarn.hidden = usePhrase.checked;
+  if (!usePhrase.checked) phrase.value = '';
+  else phrase.focus();
+});
+
+gen.addEventListener('click', async () => {
+  err.textContent = '';
+  const text = msg.value;
+  if (!text.trim()) {
+    err.textContent = 'Type a message first.';
+    return;
+  }
+  if (text.length > MAX) {
+    err.textContent = `Messages are limited to ${MAX} characters.`;
+    return;
+  }
+  if (usePhrase.checked && !phrase.value.trim()) {
+    err.textContent = 'Enter a secret phrase, or turn that option off.';
+    return;
+  }
+
+  gen.disabled = true;
+  gen.textContent = 'Encrypting…';
+  try {
+    await waitForTurnstileToken();
+    gen.textContent = 'Creating link…';
+    const ttlSec = Math.min(TTL_MAX_SEC, Math.max(TTL_MIN_SEC, ttlMinutes() * 60));
+
+    const res = await fetch('/api/create', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ttl: ttlSec, burn: burn.checked, turnstileToken: window.turnstileToken }),
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      const detail = e.codes ? ` [${e.codes.join(', ')}]` : '';
+      throw new Error((e.error || `Server error (${res.status})`) + detail);
+    }
+    const { id, serverShare } = await res.json();
+    const share = unb64u(serverShare);
+
+    // Encrypt entirely in the browser.
+    const K = randomBytes(32);
+    const { iv, ct } = await aesEncrypt(K, text);
+
+    let saltSeg = '-';
+    let mixed = xor(K, share);
+    if (usePhrase.checked && phrase.value) {
+      const salt = randomBytes(16);
+      const pk = await pbkdf2(phrase.value, salt);
+      mixed = xor(mixed, pk);
+      saltSeg = b64u(salt);
+    }
+
+    // Everything rides in the #fragment (never sent to a server):
+    //   <id> ~ iv . salt . urlKeyPart . ciphertext
+    // The id is only extracted client-side and sent to /api/share via fetch.
+    const payload = [b64u(iv), saltSeg, b64u(mixed), b64u(ct)].join('.');
+    link.value = `${location.origin}/view#${id}~${payload}`;
+    renderQr(link.value);
+
+    const opens = burn.checked ? 'can open it once — then never again' : 'can open it until it expires';
+    shareHint.textContent =
+      saltSeg !== '-'
+        ? `Anyone with this link AND the secret phrase ${opens}. Send the link and the phrase separately, through channels you trust.`
+        : `Anyone with this link ${opens}. Share it through a channel you trust.`;
+
+    // Clear the draft and phrase before leaving the compose screen.
+    msg.value = '';
+    count.textContent = `0/${MAX}`;
+    count.classList.remove('over');
+    phrase.value = '';
+
+    compose.hidden = true;
+    out.hidden = false;
+    link.focus();
+    link.select();
+  } catch (e) {
+    err.textContent = e.message || String(e);
+  } finally {
+    gen.disabled = false;
+    gen.textContent = 'Generate secure link';
+    if (typeof window.turnstile?.reset === 'function') {
+      window.turnstile.reset();
+      window.turnstileToken = '';
+    }
+  }
+});
+
+newMsg.addEventListener('click', () => {
+  link.value = '';
+  shareHint.textContent = '';
+  qrWrap.textContent = '';
+  qrWrap.hidden = true;
+  burn.checked = false;
+  usePhrase.checked = true;
+  phraseRow.hidden = false;
+  phraseWarn.hidden = true;
+  out.hidden = true;
+  compose.hidden = false;
+  msg.focus();
+});
+
+copy.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(link.value);
+    copy.textContent = 'Copied ✓';
+    setTimeout(() => (copy.textContent = 'Copy'), 1500);
+  } catch {
+    link.select();
+  }
+});
+
+renderAd(document.getElementById('ad'));

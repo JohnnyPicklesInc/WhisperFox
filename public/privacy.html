@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WhisperFox — privacy policy</title>
+    <meta name="description" content="WhisperFox privacy policy: messages are encrypted in your browser and never reach us. No accounts, no cookies, no tracking. What little is processed, explained plainly." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content="WhisperFox — privacy policy" />
+    <meta property="og:description" content="Messages are encrypted in your browser and never reach us. No accounts, no cookies, no tracking." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="stylesheet" href="/style.css" />
+    <!-- No scripts on this page. -->
+  </head>
+  <body>
+    <main class="card wide">
+      <h1 class="brand small"><a class="homelink" href="/">🦊 WhisperFox</a></h1>
+      <p class="tagline">Privacy policy — short, because there is very little to disclose.</p>
+
+      <section class="how">
+        <h2>The one-paragraph version</h2>
+        <p class="hint">
+          Your message is encrypted in your browser before anything leaves your device, and
+          the encrypted message travels in the part of the link (<code>#fragment</code>)
+          that browsers never send to servers. We have no accounts, no message database, no
+          cookies, and no analytics. We cannot read your messages, and we store nothing
+          about them.
+        </p>
+
+        <h2>What we never receive or store</h2>
+        <ol class="steps">
+          <li>
+            <b>Your message.</b>
+            Encryption happens in your browser; the readable text and the sealed
+            ciphertext never reach our servers in any form.
+          </li>
+          <li>
+            <b>Your encryption key or secret phrase.</b>
+            The key is generated in your browser and split so that our server only ever
+            holds a random, content-free half. A secret phrase, if you set one, never
+            leaves your device.
+          </li>
+          <li>
+            <b>Any record of your message's content.</b>
+            No message content, no keys, no phrases — there is no database of messages.
+            One narrow, opt&#8209;in exception: if the sender enables
+            burn&#8209;after&#8209;read, we keep a content&#8209;free “this link was
+            already opened” marker (a random identifier that is already public in the
+            link itself) so the link can refuse a second open. It reveals nothing about
+            the message and self&#8209;erases when the link expires.
+          </li>
+        </ol>
+
+        <h2>What is processed, and by whom</h2>
+        <ol class="steps">
+          <li>
+            <b>Hosting (Cloudflare).</b>
+            WhisperFox runs on Cloudflare Pages. Like any web host, Cloudflare processes
+            your IP address and standard request data to deliver the site and defend it
+            against attacks, under
+            <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener">Cloudflare's privacy policy</a>.
+            We do not add logging of our own.
+          </li>
+          <li>
+            <b>Bot check (Cloudflare Turnstile).</b>
+            The create page runs Cloudflare's Turnstile to stop automated abuse. It is the
+            only third-party script anywhere on the site, and it never appears on the page
+            that displays a decrypted message.
+          </li>
+          <li>
+            <b>The ad (EthicalAds).</b>
+            The site is funded by a single privacy-respecting ad from
+            <a href="https://www.ethicalads.io/" rel="noopener">EthicalAds</a>, which uses
+            no cookies and no tracking scripts. Our server picks the ad; no ad JavaScript
+            ever runs in your browser. If a sponsored ad is shown, your browser loads its
+            image and a view counter directly from EthicalAds' servers, which — like any
+            image request — reveals your IP address to them and nothing else. When no
+            sponsor is available we show our own house ad and no third party is contacted
+            at all.
+          </li>
+        </ol>
+
+        <h2>Cookies, accounts, and tracking</h2>
+        <p class="hint">
+          None. WhisperFox sets no cookies, requires no account, and runs no analytics or
+          tracking of any kind.
+        </p>
+
+        <h2>Reporting abuse</h2>
+        <p class="hint">
+          If a WhisperFox link is being used to harass you or in connection with something
+          unlawful, email
+          <a href="mailto:johnnypicklespartners@gmail.com">johnnypicklespartners@gmail.com</a>. Because messages are
+          end-to-end encrypted and never reach us, we cannot read or retrieve a
+          message's content — but every link expires on its own within 24 hours at most,
+          and we act on reports about how the service is used.
+        </p>
+
+        <h2>Changes</h2>
+        <p class="hint">
+          If this policy changes, the new version appears on this page. The project is
+          <a href="https://github.com/JohnnyPicklesInc/WhisperFox" rel="noopener">open source</a>,
+          so the history of this page is public too.
+        </p>
+      </section>
+
+      <p class="how-cta"><a class="primary" href="/">Send a self-destructing message</a></p>
+
+      <footer class="foot">Zero-knowledge · serverless · <a href="/how">How it works</a> · <a href="/compare">Compare</a> · <a href="https://github.com/JohnnyPicklesInc/WhisperFox" rel="noopener">open source</a></footer>
+    </main>
+  </body>
+</html>

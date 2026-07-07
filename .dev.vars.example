@@ -1,0 +1,18 @@
+# Local dev config for `wrangler pages dev`. Copy this file to `.dev.vars`
+# (which is gitignored) and it is picked up automatically:  cp .dev.vars.example .dev.vars
+#
+# These are DEV-ONLY values, safe to commit as a template. In production set the
+# real ones with:  wrangler pages secret put ROOT_PEPPER   (etc.) — never reuse these.
+
+# Static pepper mixed (HMAC) with the hourly random KV roots to form the
+# effective per-epoch root. Alone it derives nothing — the KV randoms rotate
+# hourly and self-erase. Replace with a long random value in production.
+ROOT_PEPPER=dev-only-pepper-change-me-0123456789abcdefghijklmnop
+
+# Cloudflare Turnstile secret. This is the official "always passes" TEST key,
+# and the Worker also skips the network call for any 1x0000... test secret so
+# local dev works offline. Swap for your real secret in production.
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+
+# Optional: comma-separated API keys; Bearer-auth requests skip Turnstile.
+API_KEYS=dev-cli-key-1

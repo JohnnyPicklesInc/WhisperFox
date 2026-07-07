@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WhisperFox — secret message</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Deliberately generic previews: link crawlers never see the #fragment,
+         so there is nothing message-specific to leak — keep it that way. -->
+    <meta property="og:title" content="WhisperFox — secret message" />
+    <meta property="og:description" content="Someone sent you a self-destructing message. It expires soon." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="stylesheet" href="/style.css" />
+    <!-- No third-party scripts here (see _headers CSP): this page shows the
+         decrypted secret, so nothing foreign is allowed to run next to it. -->
+  </head>
+  <body>
+    <main class="card">
+      <h1 class="brand small">🦊 WhisperFox</h1>
+
+      <!-- Ad shown BEFORE reveal; rendered first-party from /api/ad. -->
+      <div id="ad" class="ad-slot" aria-label="advertisement"></div>
+
+      <section id="gate" class="gate">
+        <p class="tagline">Someone sent you a self-destructing message.</p>
+        <p id="burnNotice" class="warn" hidden>This message can only be opened once — make sure you're ready before revealing it.</p>
+        <div id="phraseWrap" hidden class="field">
+          <span class="label">This message needs a secret phrase</span>
+          <input id="phraseInput" type="text" autocomplete="off" placeholder="Enter the secret phrase" />
+        </div>
+        <button id="reveal" class="primary">Reveal message</button>
+        <p id="gateErr" class="err" role="alert"></p>
+        <a class="secondary make-own" href="/">Create your own private link</a>
+      </section>
+
+      <section id="message" hidden class="message">
+        <div id="timer" class="timer"></div>
+        <pre id="body" class="body"></pre>
+        <p id="afterHint" class="hint">This link keeps working until the timer above runs out — then the message can't be opened again.</p>
+        <a class="secondary make-own" href="/">Create your own private link</a>
+      </section>
+
+      <section id="expired" hidden class="expired">
+        <div class="lock">⌛</div>
+        <h2>Access denied — session expired</h2>
+        <p>This message has expired or the link is invalid. Nothing can be recovered.</p>
+        <a class="primary" href="/">Create your own private link</a>
+      </section>
+
+      <footer class="foot">🔒 Secured by WhisperFox. <a href="/">Create a private link</a> · <a href="/how">How it works</a> · <a href="/privacy">Privacy</a></footer>
+    </main>
+    <script type="module" src="/view.js"></script>
+  </body>
+</html>

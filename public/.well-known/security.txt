@@ -1,0 +1,5 @@
+Contact: mailto:johnnypicklespartners@gmail.com
+Expires: 2027-07-06T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://whisperfox.pages.dev/.well-known/security.txt
+Policy: https://github.com/JohnnyPicklesInc/WhisperFox

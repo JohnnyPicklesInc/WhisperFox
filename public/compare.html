@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WhisperFox vs Privnote vs One-Time Secret vs Yopass</title>
+    <meta name="description" content="An honest comparison of self-destructing message services: who stores your ciphertext, whose keys touch their servers, and what expiry really means." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content="WhisperFox vs Privnote vs One-Time Secret vs Yopass" />
+    <meta property="og:description" content="Who stores your ciphertext, whose keys touch their servers, and what expiry really means." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="stylesheet" href="/style.css" />
+    <!-- No scripts on this page. -->
+  </head>
+  <body>
+    <main class="card wide">
+      <h1 class="brand small"><a class="homelink" href="/">🦊 WhisperFox</a></h1>
+      <p class="tagline">How WhisperFox compares to other self-destructing message tools — honestly, including where they beat us.</p>
+
+      <section class="how">
+        <h2>The one question that separates these tools</h2>
+        <p class="hint">
+          Every service on this page lets you send a message that stops working later. The
+          difference is what sits on their servers in the meantime. Most store your
+          encrypted message and promise to delete it. WhisperFox never receives it — the
+          sealed message lives inside the link itself, and expiry happens because the key
+          material is cryptographically erased, not because a database row was deleted.
+        </p>
+
+        <div class="cmp-wrap">
+          <table class="cmp">
+            <thead>
+              <tr>
+                <th></th>
+                <th>WhisperFox</th>
+                <th>Privnote</th>
+                <th>One&#8209;Time Secret</th>
+                <th>Yopass</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Message stored on their servers</th>
+                <td class="good">Never — it's sealed inside the link</td>
+                <td>Yes (encrypted, until read or expiry)</td>
+                <td>Yes (encrypted server&#8209;side)</td>
+                <td>Yes (encrypted, until read or expiry)</td>
+              </tr>
+              <tr>
+                <th>Decryption key kept off their servers</th>
+                <td class="good">Yes — split between the link and a derived half that's refused after expiry</td>
+                <td>Yes (key rides in the link)</td>
+                <td>No — decryption keys live on their application servers</td>
+                <td>Yes (key rides in the link)</td>
+              </tr>
+              <tr>
+                <th>What makes expiry happen</th>
+                <td class="good">Cryptographic key erasure — the material to rebuild the key stops existing</td>
+                <td>Deletion policy on their servers</td>
+                <td>Deletion policy on their servers</td>
+                <td>Deletion policy on their servers</td>
+              </tr>
+              <tr>
+                <th>Open source</th>
+                <td class="good">Yes (MIT)</td>
+                <td>No</td>
+                <td>Yes</td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <th>Burn after first read</th>
+                <td>Optional per message</td>
+                <td>Yes (default)</td>
+                <td>Yes (always)</td>
+                <td>Yes (optional)</td>
+              </tr>
+              <tr>
+                <th>Maximum lifetime</th>
+                <td>24 hours</td>
+                <td>Up to ~30 days</td>
+                <td>Days (plan&#8209;dependent)</td>
+                <td>1 week</td>
+              </tr>
+              <tr>
+                <th>Account needed</th>
+                <td>Never</td>
+                <td>No</td>
+                <td>Optional</td>
+                <td>No</td>
+              </tr>
+              <tr>
+                <th>File attachments</th>
+                <td>No — text only, by design</td>
+                <td>No</td>
+                <td>No</td>
+                <td>Yes</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="hint">
+          Based on each service's published documentation as of July 2026. If something
+          here is out of date,
+          <a href="https://github.com/JohnnyPicklesInc/WhisperFox" rel="noopener">open an issue</a>
+          and we'll fix it.
+        </p>
+
+        <h2>Where the others are better — really</h2>
+        <p class="hint">
+          Honesty cuts both ways. If you need to send a <b>file</b>, use Yopass. If you
+          need a link that lives for <b>weeks</b>, use Privnote or One&#8209;Time Secret.
+          And because those services store your message, their burn&#8209;after&#8209;read
+          can be enforced exactly once at the database; WhisperFox's burn option is a
+          fast best&#8209;effort check on top of the timer, not a database transaction.
+          What none of them can offer: a server that has <i>nothing of yours to lose</i>.
+          A breach, a subpoena, or a rogue admin at WhisperFox turns up no messages —
+          not because of a policy, but because they were never here.
+        </p>
+
+        <h2>When WhisperFox is the right choice</h2>
+        <p class="hint">
+          Short-lived secrets where trust matters more than duration: a password handed to
+          a colleague, a door code, a 2FA seed during onboarding, an API key pasted into a
+          chat that gets archived forever. Encrypt in your browser, send the link, and
+          within 24 hours at most the key material needed to open it no longer exists
+          anywhere. Read the full design in
+          <a href="/how">how it works</a> — every line of it is
+          <a href="https://github.com/JohnnyPicklesInc/WhisperFox" rel="noopener">open source</a>.
+        </p>
+      </section>
+
+      <p class="how-cta"><a class="primary" href="/">Send a self-destructing message</a></p>
+
+      <footer class="foot">Zero-knowledge · serverless · <a href="/how">How it works</a> · <a href="/privacy">Privacy</a> · <a href="https://github.com/JohnnyPicklesInc/WhisperFox" rel="noopener">open source</a></footer>
+    </main>
+  </body>
+</html>

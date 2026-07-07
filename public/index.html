@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WhisperFox — send a secret that self-destructs</title>
+    <meta name="description" content="Encrypt a short message in your browser. It becomes a link that expires in 5 minutes to 24 hours. We store nothing about it." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content="WhisperFox — send a secret that self-destructs" />
+    <meta property="og:description" content="Encrypt a short message in your browser. It becomes a link that expires in 5 minutes to 24 hours. We store nothing about it." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="stylesheet" href="/style.css" />
+    <!-- Bootstrap Turnstile callbacks BEFORE loading api.js. External file (not
+         inline) to comply with CSP script-src 'self' — inlining would require
+         'unsafe-inline' or a hash and would make maintenance fragile. -->
+    <script src="/turnstile-bootstrap.js"></script>
+    <!-- Turnstile: loaded ONLY on this create page (see _headers CSP). Uses the
+         official always-pass TEST site key for local dev; swap in production. -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  </head>
+  <body>
+    <main class="card">
+      <h1 class="brand">🦊 WhisperFox</h1>
+      <p class="tagline">Write a secret. Get a link that stops working after it expires. The message lives in the link — we never hold it anywhere.</p>
+
+      <div id="compose">
+        <label class="field">
+          <span class="label">Your message</span>
+          <textarea id="msg" maxlength="500" rows="5" placeholder="Type the secret you want to share…"></textarea>
+          <span id="count" class="count">0/500</span>
+        </label>
+
+        <label class="field">
+          <span class="label">Self-destruct after <b id="ttlLabel">15 min</b></span>
+          <!-- Index into STEPS in create.js: 5m/15m/30m/1h/4h/12h/24h. -->
+          <input id="ttl" type="range" min="0" max="6" value="1" step="1" />
+        </label>
+
+        <div class="field">
+          <label class="check">
+            <input id="usePhrase" type="checkbox" checked />
+            <span>Require a secret phrase to open <span class="opt">— recommended</span></span>
+          </label>
+          <p id="phraseWarn" class="warn" hidden>Without a phrase, anyone who gets the link can read this message until it expires.</p>
+          <div id="phraseRow">
+            <input id="phrase" type="text" autocomplete="off" placeholder="e.g. blue-otter-lamp" />
+            <span class="hint">A word you make up for this message and share separately — <b>don't reuse a real password.</b></span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="check">
+            <input id="burn" type="checkbox" />
+            <span>Burn after first read <span class="opt">— the link stops working the moment it's opened</span></span>
+          </label>
+        </div>
+
+        <!-- No id="turnstile": an element id creates window.turnstile, which
+             Cloudflare's api.js mistakes for an already-loaded script and then
+             refuses to initialize. Turnstile auto-renders by the class.
+             Callbacks: success → onTurnstile, error/expired → onTurnstileError/onTurnstileExpired. -->
+        <div class="cf-turnstile" data-sitekey="1x00000000000000000000AA" data-callback="onTurnstile" data-error-callback="onTurnstileError" data-expired-callback="onTurnstileExpired"></div>
+
+        <button id="gen" class="primary">Generate secure link</button>
+        <p id="err" class="err" role="alert"></p>
+      </div>
+
+      <div id="out" class="out" hidden>
+        <h2 class="done-title">✓ Your secure link is ready</h2>
+        <p class="hint">Copy it and share it — the message is sealed inside the link.</p>
+        <div class="linkrow">
+          <input id="link" class="link" readonly />
+          <button id="copy" class="copy">Copy</button>
+        </div>
+        <p id="shareHint" class="hint"></p>
+        <div id="qrWrap" class="qr" hidden></div>
+        <button id="newMsg" class="primary" type="button">Create a new message</button>
+      </div>
+
+      <div id="ad" class="ad-slot" aria-label="advertisement"></div>
+      <footer class="foot">Zero-knowledge · serverless · we never hold your message. <a href="/how">How it works &amp; FAQ</a> · <a href="/compare">Compare</a> · <a href="/privacy">Privacy</a></footer>
+    </main>
+    <script type="module" src="/create.js"></script>
+  </body>
+</html>

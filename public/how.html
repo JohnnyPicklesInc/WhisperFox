@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WhisperFox — how it works &amp; FAQ</title>
+    <meta name="description" content="How WhisperFox keeps your message private: encrypted in your browser, sealed in the link, nothing stored on our servers. Plain answers to common questions." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content="WhisperFox — how it works &amp; FAQ" />
+    <meta property="og:description" content="How WhisperFox keeps your message private: encrypted in your browser, sealed in the link, nothing stored on our servers." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="stylesheet" href="/style.css" />
+    <!-- No scripts on this page. -->
+  </head>
+  <body>
+    <main class="card wide">
+      <h1 class="brand small"><a class="homelink" href="/">🦊 WhisperFox</a></h1>
+      <p class="tagline">How it works, in plain language — and honest answers about what we can and can't protect.</p>
+
+      <section class="how">
+        <h2>How it works</h2>
+
+        <ol class="steps">
+          <li>
+            <b>Your message is encrypted in your browser.</b>
+            Before anything leaves your device, your browser locks the message with a
+            freshly generated key (AES&#8209;256&#8209;GCM — the same cipher banks and
+            messaging apps use). The readable text never travels anywhere.
+          </li>
+          <li>
+            <b>The sealed message lives inside the link itself.</b>
+            Everything after the <code>#</code> in the link is the encrypted message.
+            Browsers never send that part of a URL to any server — including ours.
+            We physically cannot receive your message, so there is nothing for us to
+            store, leak, or hand over.
+          </li>
+          <li>
+            <b>The key to open it is split in two.</b>
+            Half rides in the link; the other half is a value our server computes on
+            demand. Opening the message requires both halves (plus your secret phrase,
+            if you set one). Neither the link alone nor our server alone can decrypt
+            anything.
+          </li>
+          <li>
+            <b>When the timer ends, the server half disappears — for real.</b>
+            The server refuses to compute its half the moment your deadline passes, and
+            the random value it would need is automatically and permanently erased within
+            about a day of being created. After that, the missing half doesn't exist
+            anywhere. Expiry isn't a policy we promise to follow — it's math. Even we
+            couldn't reopen an expired message.
+          </li>
+        </ol>
+
+        <p class="hint">
+          The short version: the message is in the link, the link never reaches us, and
+          the piece needed to unlock it self-erases. There is no database of messages
+          because there are no messages to put in one.
+        </p>
+      </section>
+
+      <section class="faq">
+        <h2>FAQ</h2>
+
+        <details>
+          <summary>Can WhisperFox read my message?</summary>
+          <p>
+            No — and not because we promise not to look, but because we never receive it.
+            Encryption happens in your browser, and the encrypted message travels in the
+            <code>#fragment</code> part of the link, which browsers never transmit to servers.
+            The only thing our server ever handles is a short random value that contains
+            no information about your message.
+          </p>
+        </details>
+
+        <details>
+          <summary>What do you store on your servers?</summary>
+          <p>
+            Nothing about your message's content — no message, no encryption keys, no
+            secret phrases. The server keeps one random 32&#8209;byte value per hour
+            (shared across all messages, containing no message data) that it uses to
+            compute key-halves on demand, and that value automatically erases itself
+            about a day later. The single exception is opt&#8209;in: if you enable
+            burn&#8209;after&#8209;read, we keep a content&#8209;free “this link was already
+            opened” marker — a random identifier that is already public in the link
+            itself — which self&#8209;erases when the link expires.
+          </p>
+        </details>
+
+        <details>
+          <summary>What happens when the timer runs out?</summary>
+          <p>
+            The server refuses to hand out its half of the key the moment the deadline
+            passes, and the hourly random value it would need is permanently erased within
+            about a day. Once that happens, the key half is gone from the universe — an
+            expired message cannot be recovered by the recipient, by an attacker, or by us. If the
+            message is still open in a tab, the page also wipes the text from the screen
+            when the countdown hits zero.
+          </p>
+        </details>
+
+        <details>
+          <summary>Can the link be opened more than once?</summary>
+          <p>
+            By default, yes — the link keeps working until the timer you chose (5 minutes
+            to 24 hours) runs out, which is forgiving if the recipient mistypes or reloads.
+            Tick <b>“Burn after first read”</b> when you create the message and the link
+            stops working the moment it is first opened; if it is “already opened” when
+            your recipient arrives, you both know someone else got there first. For
+            making sure only the right person can open it at all, use a secret phrase.
+          </p>
+        </details>
+
+        <details>
+          <summary>What does the secret phrase do, and do you see it?</summary>
+          <p>
+            The phrase is folded into the encryption key in your browser — it never leaves
+            your device and is never sent to us. Without it, the link alone isn't enough to
+            decrypt the message. Share the phrase over a different channel than the link
+            (say the link over email, the phrase over a call), and make up a fresh one each
+            time — don't reuse a real password.
+          </p>
+        </details>
+
+        <details>
+          <summary>What if someone intercepts the link?</summary>
+          <p>
+            Anyone holding the link can open the message until it expires — that's why the
+            timer is short and why we recommend a secret phrase. With a phrase set, an
+            intercepted link is useless on its own. Without one, treat the link like the
+            secret itself.
+          </p>
+        </details>
+
+        <details>
+          <summary>If your servers were hacked, what would the attacker get?</summary>
+          <p>
+            No messages — there are none stored. At worst, an attacker would obtain the
+            hourly random values, which by themselves decrypt nothing: they'd still need
+            the link (which we never have) for every individual message. And because those
+            values self-erase within about a day, even a successful break-in only ever
+            concerns roughly a day's worth of links the attacker somehow also captured
+            elsewhere.
+          </p>
+        </details>
+
+        <details>
+          <summary>Are the ads safe next to my secret?</summary>
+          <p>
+            Yes. Our server fetches the ad and passes it to the page as plain first-party
+            HTML — no third-party JavaScript ever runs on WhisperFox, and the page that
+            shows your decrypted message enforces this with a strict Content Security
+            Policy. Ad code cannot see what's on the page because ad code never runs here.
+          </p>
+        </details>
+
+        <details>
+          <summary>What can't WhisperFox protect against?</summary>
+          <p>
+            Honesty matters more than marketing: once a message is decrypted on the
+            recipient's screen, we can't stop them from taking a screenshot, copying the
+            text, or photographing the display. The self-destruct protects against links
+            being opened late or by the wrong person — not against a recipient who chooses
+            to keep what you sent them. Only send secrets to people you trust with them.
+          </p>
+        </details>
+
+        <details>
+          <summary>Why should I believe any of this?</summary>
+          <p>
+            Don't take our word for it — WhisperFox is
+            <a href="https://github.com/JohnnyPicklesInc/WhisperFox" rel="noopener">open source (MIT)</a>.
+            Every line of the browser encryption, the server, and the key-erasure logic is
+            public and small enough to read in one sitting. You can also open your
+            browser's developer tools while creating a message and watch the network tab:
+            your message text never appears in any request.
+          </p>
+        </details>
+
+        <details>
+          <summary>Do I need an account? What about tracking?</summary>
+          <p>
+            No accounts, no sign-up, no cookies for tracking. The only third-party
+            component anywhere is Cloudflare's Turnstile bot-check on the create page,
+            which exists to stop automated abuse. The site is funded by the single ad you
+            see, served first-party as described above.
+          </p>
+        </details>
+
+        <details>
+          <summary>How do I report abuse?</summary>
+          <p>
+            Email <a href="mailto:johnnypicklespartners@gmail.com">johnnypicklespartners@gmail.com</a> with the link
+            if you still have it. We can't read anyone's messages — encryption happens in
+            the sender's browser and the message never reaches us — but every link dies on
+            its own within 24 hours at most, and we take reports about misuse of the
+            service seriously.
+            See the <a href="/privacy">privacy policy</a> for exactly what we can and
+            cannot see.
+          </p>
+        </details>
+
+        <details>
+          <summary>What are the limits?</summary>
+          <p>
+            Messages are up to 500 characters and expire after 5 minutes to 24 hours — you
+            pick. WhisperFox is built for short-lived secrets like a password you're
+            handing off, a door code, or a one-time link, not for long documents or
+            long-term storage.
+          </p>
+        </details>
+      </section>
+
+      <p class="how-cta"><a class="primary" href="/">Send a self-destructing message</a></p>
+
+      <footer class="foot">Zero-knowledge · serverless · <a href="https://github.com/JohnnyPicklesInc/WhisperFox" rel="noopener">open source</a> · <a href="/compare">Compare</a> · <a href="/privacy">Privacy</a></footer>
+    </main>
+  </body>
+</html>

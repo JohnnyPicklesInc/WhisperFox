@@ -1,0 +1,5 @@
+# Message links carry their payload in the #fragment, which crawlers never
+# receive — but reveal pages still have no business in a search index.
+User-agent: *
+Allow: /
+Disallow: /view

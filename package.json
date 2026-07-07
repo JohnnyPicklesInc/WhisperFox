@@ -1,0 +1,23 @@
+{
+  "name": "whisperfox",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Ad-supported, serverless, zero-knowledge ephemeral message service. The server holds nothing about the message.",
+  "license": "MIT",
+  "author": "Chris Whelan <johnnypicklespartners@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JohnnyPicklesInc/WhisperFox.git"
+  },
+  "scripts": {
+    "dev": "wrangler pages dev public",
+    "selftest": "node scripts/selftest.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "cli": "node scripts/cli.mjs",
+    "deploy": "wrangler pages deploy public"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}
