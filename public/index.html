@@ -20,6 +20,10 @@
       <p class="tagline">Write a secret. Get a link that stops working after it expires. The message lives in the link — we never hold it anywhere.</p>
 
       <div id="compose">
+        <div id="slackBanner" class="slack-banner" hidden>
+          🦊 Creating a secret to share back to Slack. Type it below — it's encrypted here in your
+          browser and never sent to Slack or our servers.
+        </div>
         <label class="field">
           <span class="label">Your message</span>
           <textarea id="msg" maxlength="500" rows="5" placeholder="Type the secret you want to share…"></textarea>
@@ -64,11 +68,19 @@
         </div>
         <p id="shareHint" class="hint"></p>
         <div id="qrWrap" class="qr" hidden></div>
+        <div id="slackShare" class="slack-share" hidden>
+          <label class="check">
+            <input id="slackInChannel" type="checkbox" />
+            <span>Post to the channel <span class="opt">— everyone there sees the link; otherwise only you</span></span>
+          </label>
+          <button id="shareSlack" class="primary" type="button">Share to Slack</button>
+          <p id="slackShareMsg" class="hint" role="status"></p>
+        </div>
         <button id="newMsg" class="primary" type="button">Create a new message</button>
       </div>
 
       <div id="ad" class="ad-slot" aria-label="advertisement"></div>
-      <footer class="foot">Zero-knowledge · serverless · we never hold your message. <a href="/how">How it works &amp; FAQ</a> · <a href="/compare">Compare</a> · <a href="/privacy">Privacy</a></footer>
+      <footer class="foot">Zero-knowledge · serverless · we never hold your message. <a href="/how">How it works &amp; FAQ</a> · <a href="/slack">Slack app</a> · <a href="/compare">Compare</a> · <a href="/privacy">Privacy</a></footer>
     </main>
     <script type="module" src="/create.js"></script>
   </body>

@@ -3,7 +3,7 @@
  * encrypts the message locally, and assembles the
  * /view#<id>~<iv.salt.urlKeyPart.ct> link.
  */
-import { b64u, unb64u, xor, randomBytes, pbkdf2, aesEncrypt, webCryptoAvailable } from '/crypto.js';
+import { sealMessage, webCryptoAvailable } from '/crypto.js';
 import { renderAd } from '/ad.js';
 import qrcodegen from '/vendor/qrcodegen.js';
 
@@ -35,12 +35,25 @@ const qrWrap = $('#qrWrap');
 const link = $('#link');
 const copy = $('#copy');
 const err = $('#err');
+const slackBanner = $('#slackBanner');
+const slackShare = $('#slackShare');
+const shareSlack = $('#shareSlack');
+const slackInChannel = $('#slackInChannel');
+const slackShareMsg = $('#slackShareMsg');
 
 // crypto.subtle requires a secure context; disable the form when unavailable.
 if (!webCryptoAvailable()) {
   err.textContent = 'Encryption is disabled on insecure connections. Open this page over HTTPS (or localhost).';
   gen.disabled = true;
 }
+
+// Slack handoff mode: the /whisperfox slash command opens this page with a
+// signed context (in ?slack=) so the finished link can be posted back to the
+// channel. The secret is still typed and encrypted HERE — nothing about it
+// reaches Slack or our server; only the resulting link is relayed, on demand,
+// when the user clicks "Share to Slack".
+const slackCtx = new URLSearchParams(location.search).get('slack');
+if (slackCtx) slackBanner.hidden = false;
 
 function fmtTtl(minutes) {
   if (minutes < 60) return `${minutes} min`;
@@ -148,31 +161,19 @@ gen.addEventListener('click', async () => {
       throw new Error((e.error || `Server error (${res.status})`) + detail);
     }
     const { id, serverShare } = await res.json();
-    const share = unb64u(serverShare);
 
-    // Encrypt entirely in the browser.
-    const K = randomBytes(32);
-    const { iv, ct } = await aesEncrypt(K, text);
-
-    let saltSeg = '-';
-    let mixed = xor(K, share);
-    if (usePhrase.checked && phrase.value) {
-      const salt = randomBytes(16);
-      const pk = await pbkdf2(phrase.value, salt);
-      mixed = xor(mixed, pk);
-      saltSeg = b64u(salt);
-    }
-
+    // Encrypt entirely in the browser (shared split-key seal — see crypto.js).
     // Everything rides in the #fragment (never sent to a server):
     //   <id> ~ iv . salt . urlKeyPart . ciphertext
     // The id is only extracted client-side and sent to /api/share via fetch.
-    const payload = [b64u(iv), saltSeg, b64u(mixed), b64u(ct)].join('.');
+    const usedPhrase = usePhrase.checked && !!phrase.value;
+    const payload = await sealMessage(serverShare, text, { phrase: usedPhrase ? phrase.value : undefined });
     link.value = `${location.origin}/view#${id}~${payload}`;
     renderQr(link.value);
 
     const opens = burn.checked ? 'can open it once — then never again' : 'can open it until it expires';
     shareHint.textContent =
-      saltSeg !== '-'
+      usedPhrase
         ? `Anyone with this link AND the secret phrase ${opens}. Send the link and the phrase separately, through channels you trust.`
         : `Anyone with this link ${opens}. Share it through a channel you trust.`;
 
@@ -184,6 +185,12 @@ gen.addEventListener('click', async () => {
 
     compose.hidden = true;
     out.hidden = false;
+    if (slackCtx) {
+      slackShare.hidden = false;
+      slackShareMsg.textContent = '';
+      shareSlack.disabled = false;
+      shareSlack.textContent = 'Share to Slack';
+    }
     link.focus();
     link.select();
   } catch (e) {
@@ -203,9 +210,38 @@ newMsg.addEventListener('click', () => {
   usePhrase.checked = true;
   phraseRow.hidden = false;
   phraseWarn.hidden = true;
+  slackShare.hidden = true;
+  slackShareMsg.textContent = '';
   out.hidden = true;
   compose.hidden = false;
   msg.focus();
+});
+
+// Relay the finished link back to Slack via the signed handoff context. Only
+// the link (the shareable artifact) leaves the browser — never the plaintext.
+shareSlack.addEventListener('click', async () => {
+  if (!slackCtx || !link.value) return;
+  shareSlack.disabled = true;
+  const prev = shareSlack.textContent;
+  shareSlack.textContent = 'Sharing…';
+  slackShareMsg.textContent = '';
+  try {
+    const res = await fetch('/api/slack/share', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ link: link.value, slack: slackCtx, inChannel: slackInChannel.checked }),
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.error || `Slack error (${res.status})`);
+    }
+    slackShareMsg.textContent = slackInChannel.checked ? 'Shared to the channel ✓' : 'Sent to you in Slack ✓';
+    shareSlack.textContent = 'Shared ✓';
+  } catch (e) {
+    slackShareMsg.textContent = e.message || String(e);
+    shareSlack.textContent = prev;
+    shareSlack.disabled = false;
+  }
 });
 
 copy.addEventListener('click', async () => {

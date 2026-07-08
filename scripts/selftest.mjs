@@ -23,7 +23,11 @@ import {
   TTL_MAX,
   b64u as srvB64u,
 } from '../functions/_lib.js';
-import { b64u, unb64u, xor, randomBytes, pbkdf2, aesEncrypt, aesDecrypt } from '../public/crypto.js';
+import { b64u, unb64u, xor, randomBytes, pbkdf2, aesEncrypt, aesDecrypt, sealMessage } from '../public/crypto.js';
+import { sealMessage as sdkSealMessage } from '../sdk/crypto.js';
+import { sealMessage as srvSealMessage } from '../functions/_seal.js';
+import { verifySlackSignature, signContext, verifyContext } from '../functions/_slack.js';
+import { createHmac } from 'node:crypto';
 
 let pass = 0;
 let fail = 0;
@@ -202,6 +206,74 @@ try {
   phraseFailed = true;
 }
 check('wrong phrase fails to decrypt', phraseFailed);
+
+// --- sealMessage: the shared seal used by create.js, cli.mjs, and the SDK -----
+// Proves the one implementation of the split-key payload round-trips both with
+// and without a phrase, so all three callers stay in lock-step.
+{
+  const payload = await sealMessage(tok.serverShare, message, {});
+  const [ivB, saltB, mixB, ctB] = payload.split('.');
+  const rSeal = await resolveShare(root0, tok.id, t0 + 10);
+  const Kseal = xor(unb64u(mixB), unb64u(rSeal.serverShare));
+  check('sealMessage omits the salt without a phrase', saltB === '-');
+  check('sealMessage round-trips (no phrase)', (await aesDecrypt(Kseal, unb64u(ivB), unb64u(ctB))) === message);
+}
+{
+  const payload = await sealMessage(tok.serverShare, message, { phrase: 'blue-otter-lamp' });
+  const [ivB, saltB, mixB, ctB] = payload.split('.');
+  check('sealMessage includes a salt with a phrase', saltB !== '-');
+  const rSeal = await resolveShare(root0, tok.id, t0 + 10);
+  const pkSeal = await pbkdf2('blue-otter-lamp', unb64u(saltB));
+  const Kseal = xor(xor(unb64u(mixB), unb64u(rSeal.serverShare)), pkSeal);
+  check('sealMessage round-trips (with phrase)', (await aesDecrypt(Kseal, unb64u(ivB), unb64u(ctB))) === message);
+}
+
+// --- SDK crypto stays in lock-step with the website ---------------------------
+// The published @whisperfox/sdk vendors its own crypto copy; assert its seal
+// produces a payload the same server share decrypts, so the mirror can't drift.
+{
+  const payload = await sdkSealMessage(tok.serverShare, message, {});
+  const [ivB, , mixB, ctB] = payload.split('.');
+  const rSeal = await resolveShare(root0, tok.id, t0 + 10);
+  const Kseal = xor(unb64u(mixB), unb64u(rSeal.serverShare));
+  check('sdk sealMessage round-trips (parity with website)', (await aesDecrypt(Kseal, unb64u(ivB), unb64u(ctB))) === message);
+}
+
+// --- server-side seal (Slack quick path) stays in lock-step -------------------
+{
+  const payload = await srvSealMessage(tok.serverShare, message, {});
+  const [ivB, , mixB, ctB] = payload.split('.');
+  const rSeal = await resolveShare(root0, tok.id, t0 + 10);
+  const Kseal = xor(unb64u(mixB), unb64u(rSeal.serverShare));
+  check('server _seal round-trips (parity with website)', (await aesDecrypt(Kseal, unb64u(ivB), unb64u(ctB))) === message);
+}
+
+// --- Slack request-signature verification -------------------------------------
+{
+  const secret = 'slack-signing-secret';
+  const ts = String(Math.floor(t0));
+  const now = Number(ts);
+  const rawBody = 'command=%2Fwhisperfox&text=quick+hunter2&response_url=https%3A%2F%2Fhooks.slack.com%2Fx';
+  const good = 'v0=' + createHmac('sha256', secret).update(`v0:${ts}:${rawBody}`).digest('hex');
+  const hdr = (sig, t) => new Headers({ 'x-slack-signature': sig, 'x-slack-request-timestamp': String(t) });
+  check('slack signature accepts a valid request', await verifySlackSignature(hdr(good, ts), rawBody, secret, now));
+  check('slack signature rejects a tampered body', !(await verifySlackSignature(hdr(good, ts), rawBody + 'x', secret, now)));
+  check('slack signature rejects a wrong secret', !(await verifySlackSignature(hdr(good, ts), rawBody, 'other-secret', now)));
+  check('slack signature rejects a stale timestamp', !(await verifySlackSignature(hdr(good, ts), rawBody, secret, now + 400)));
+  check('slack signature rejects a missing header', !(await verifySlackSignature(hdr('', ts), rawBody, secret, now)));
+}
+
+// --- signed handoff / OAuth-state context -------------------------------------
+{
+  const secret = 'state-secret';
+  const ctxToken = await signContext({ response_url: 'https://hooks.slack.com/x', channel_id: 'C1' }, secret, 100, t0);
+  const decoded = await verifyContext(ctxToken, secret, t0 + 10);
+  check('signContext verifies and decodes its payload', !!decoded && decoded.response_url === 'https://hooks.slack.com/x' && decoded.channel_id === 'C1');
+  check('signContext rejects after exp', !(await verifyContext(ctxToken, secret, t0 + 101)));
+  check('signContext rejects a wrong secret', !(await verifyContext(ctxToken, 'other-secret', t0 + 10)));
+  const tampered = ctxToken.slice(0, -2) + (ctxToken.endsWith('AA') ? 'BB' : 'AA');
+  check('signContext rejects a tampered token', !(await verifyContext(tampered, secret, t0 + 10)));
+}
 
 // --- base64url helpers agree client<->server ----------------------------------
 const probe = randomBytes(20);

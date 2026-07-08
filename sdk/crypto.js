@@ -1,24 +1,20 @@
 /**
- * Client-side crypto for WhisperFox. Pure Web Crypto — runs in the browser,
- * and (being standards-only) is also imported by scripts/selftest.mjs under
- * Node.
+ * Crypto for @whisperfox/sdk. Pure Web Crypto (standards-only), so it runs the
+ * same in Node >= 19, modern browsers, and bundler targets.
  *
- * The message is encrypted with a fresh random 256-bit key K that exists only
- * here. K is split so it can only be reassembled with the server's key-share
- * (released before the TTL) and, optionally, a user "secret phrase":
+ * This file is a deliberate MIRROR of ../public/crypto.js: the SDK is published
+ * as a standalone package and cannot reach outside its own directory, and the
+ * project already keeps parallel crypto copies across deploy surfaces (browser
+ * vs Worker). scripts/selftest.mjs asserts this copy's sealMessage stays in
+ * lock-step with the website's — keep the two in sync.
  *
  *   urlKeyPart = K  XOR  serverShare  [ XOR  PBKDF2(secretPhrase, salt) ]
  *
  * urlKeyPart + iv + ciphertext travel in the link's #fragment (never sent to a
  * server). To read: K = urlKeyPart XOR serverShare [ XOR PBKDF2(phrase) ].
- *
- * b64u/unb64u are intentionally duplicated in functions/_lib.js — the browser
- * and the Worker are separate deploy surfaces; scripts/selftest.mjs asserts
- * they agree.
  */
 
 const encoder = new TextEncoder();
-const decoder = new TextDecoder();
 
 /**
  * Encode bytes as unpadded base64url.
@@ -98,27 +94,11 @@ export async function aesEncrypt(keyBytes, plaintext) {
 }
 
 /**
- * Decrypt AES-256-GCM ciphertext back to UTF-8 text.
- * @param {Uint8Array} keyBytes 32-byte key.
- * @param {Uint8Array} iv 12-byte IV from aesEncrypt.
- * @param {Uint8Array} ct Ciphertext (tag included).
- * @returns {Promise<string>}
- * @throws {Error} If the key is wrong or the ciphertext was tampered with.
- */
-export async function aesDecrypt(keyBytes, iv, ct) {
-  const key = await crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, ['decrypt']);
-  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
-  return decoder.decode(pt);
-}
-
-/**
  * Seal a message into the `/view#<id>~<payload>` fragment payload
- * `iv.salt.urlKeyPart.ct` (base64url, `.`-joined). This is the single shared
- * implementation of the split-key contract used by the create page, the CLI,
- * and the SDK: a fresh random 256-bit K encrypts the message, and
- * `urlKeyPart = K XOR serverShare [XOR PBKDF2(phrase, salt)]`. The result
- * carries no key usable without the server's share (released before the TTL)
- * and the phrase, if one was set. `salt` is `-` when no phrase is used.
+ * `iv.salt.urlKeyPart.ct` (base64url, `.`-joined). Mirrors sealMessage in
+ * ../public/crypto.js: a fresh random 256-bit K encrypts the message, and
+ * `urlKeyPart = K XOR serverShare [XOR PBKDF2(phrase, salt)]`. `salt` is `-`
+ * when no phrase is used.
  * @param {string} serverShareB64 base64url server key-share from POST /api/create.
  * @param {string} message UTF-8 plaintext (the caller enforces any length cap).
  * @param {{phrase?: string}} [opts] Optional secret phrase folded into the key.
@@ -136,13 +116,4 @@ export async function sealMessage(serverShareB64, message, opts = {}) {
     saltSeg = b64u(salt);
   }
   return [b64u(iv), saltSeg, b64u(mixed), b64u(ct)].join('.');
-}
-
-/**
- * Whether subtle Web Crypto is usable. Requires a secure context (HTTPS or
- * localhost); false over plain http://<ip>.
- * @returns {boolean}
- */
-export function webCryptoAvailable() {
-  return !!(globalThis.isSecureContext && globalThis.crypto?.subtle);
 }

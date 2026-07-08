@@ -13,3 +13,17 @@ ROOT_PEPPER=dev-only-pepper-change-me-0123456789abcdefghijklmnop
 # an absent one is fine. Abuse protection is a Cloudflare edge rate-limit rule
 # on /api/create plus Bot Fight Mode, not a per-request secret.
 API_KEYS=dev-cli-key-1
+
+# --- Slack app (optional) ----------------------------------------------------
+# Only needed to run the /whisperfox slash command locally. Create a Slack app
+# (see slack/manifest.json) and copy its Signing Secret + OAuth credentials.
+# In production set these with `wrangler pages secret put <NAME>`.
+#
+# Verifies inbound slash-command requests are really from Slack.
+SLACK_SIGNING_SECRET=dev-slack-signing-secret-change-me
+# Signs the browser-handoff context and the OAuth state (falls back to
+# ROOT_PEPPER if unset). Use a distinct long random value in production.
+SLACK_STATE_SECRET=dev-slack-state-secret-change-me-0123456789
+# OAuth install (public distribution). Leave blank if you're not installing.
+SLACK_CLIENT_ID=
+SLACK_CLIENT_SECRET=

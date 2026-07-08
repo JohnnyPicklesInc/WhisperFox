@@ -143,6 +143,14 @@ input[type='range'] { width: 100%; accent-color: var(--accent); }
 .qr { display: flex; justify-content: center; margin: 14px 0 2px; }
 .qr svg { width: 240px; max-width: 70%; height: auto; border-radius: 10px; }
 
+/* Slack handoff mode */
+.slack-banner {
+  background: var(--card-2); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+  border-radius: 10px; padding: 10px 12px; margin: 0 0 14px; font-size: 13px; color: var(--muted);
+}
+.slack-share { margin: 14px 0 0; border-top: 1px solid var(--border); padding-top: 14px; }
+.slack-share .primary { margin-top: 10px; }
+
 .foot { margin-top: 18px; color: var(--muted); font-size: 12px; text-align: center; }
 .foot a { color: var(--accent-2); }
 

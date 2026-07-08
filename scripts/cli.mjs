@@ -17,7 +17,7 @@
  */
 import { parseArgs } from 'node:util';
 import { readFileSync } from 'node:fs';
-import { b64u, xor, randomBytes, pbkdf2, aesEncrypt, unb64u } from '../public/crypto.js';
+import { sealMessage } from '../public/crypto.js';
 
 const MAX = 500; // mirrors the create page
 
@@ -64,17 +64,8 @@ if (!res.ok) {
 }
 const { id, serverShare } = await res.json();
 
-// Same key-split as public/create.js: urlKeyPart = K XOR share [XOR PBKDF2].
-const K = randomBytes(32);
-const { iv, ct } = await aesEncrypt(K, message);
-let saltSeg = '-';
-let mixed = xor(K, unb64u(serverShare));
-if (opts.phrase) {
-  const salt = randomBytes(16);
-  mixed = xor(mixed, await pbkdf2(opts.phrase, salt));
-  saltSeg = b64u(salt);
-}
-
-const payload = [b64u(iv), saltSeg, b64u(mixed), b64u(ct)].join('.');
+// Same key-split as public/create.js, via the shared seal (see crypto.js):
+// urlKeyPart = K XOR share [XOR PBKDF2(phrase)].
+const payload = await sealMessage(serverShare, message, { phrase: opts.phrase });
 console.error(`expires in ${Number(opts.ttl)}s${opts.burn ? ', burns on first read' : ''}${opts.phrase ? ', phrase required' : ''}`);
 console.log(`${opts.url}/view#${id}~${payload}`);

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WhisperFox for Slack — self-destructing secrets in your workspace</title>
+    <meta name="description" content="Add WhisperFox to Slack: /whisperfox creates a self-destructing secret encrypted in your browser, so the text never touches Slack or our servers." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href="https://whisperfox.pages.dev/slack" />
+    <meta property="og:url" content="https://whisperfox.pages.dev/slack" />
+    <meta property="og:title" content="WhisperFox for Slack" />
+    <meta property="og:description" content="Self-destructing secrets in Slack — encrypted in your browser, never stored." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="stylesheet" href="/style.css" />
+    <!-- No scripts on this page. -->
+  </head>
+  <body>
+    <main class="card wide">
+      <h1 class="brand small"><a class="homelink" href="/">🦊 WhisperFox</a> for Slack</h1>
+      <p class="tagline">Stop pasting passwords into channels where they live forever. <code>/whisperfox</code> turns a secret into a link that self-destructs — and by default the secret is encrypted in your browser, so it never reaches Slack or our servers.</p>
+
+      <p class="how-cta"><a class="primary" href="/api/slack/oauth">Add to Slack</a></p>
+
+      <section class="how">
+        <h2>Two ways to use it — pick your trade-off</h2>
+        <ol class="steps">
+          <li>
+            <b>/whisperfox — zero-knowledge (recommended)</b>
+            Posts a private button only you can see. Click it to open the WhisperFox
+            compose page, type your secret there, and it's encrypted <i>on your device</i>.
+            Slack and our servers never see the text — just the finished link, which you
+            can post back to the channel with one click.
+          </li>
+          <li>
+            <b>/whisperfox quick &lt;secret&gt; — convenient, server-side</b>
+            Encrypts the secret on our server and drops a one-time link straight into the
+            channel (it burns after the first read and expires in 15 minutes). This is
+            faster, but honestly: the text travels through Slack and our Worker in the
+            clear for that moment, unlike the default flow. Use it for low-stakes secrets;
+            use the button for anything sensitive.
+          </li>
+        </ol>
+        <p class="hint">
+          Either way, the secret never lands in your channel's permanent scrollback — the
+          link does, and it stops working on its own. Add <code>phrase:&lt;word&gt;</code>
+          to <code>quick</code> (or set a phrase in the browser) to require a separately-shared
+          word to open it.
+        </p>
+
+        <h2>What we store</h2>
+        <p class="hint">
+          For the default flow: nothing about your secret — it's encrypted in your browser
+          and sealed inside the link, exactly like the core
+          <a href="/how">WhisperFox</a> product. For <code>quick</code> mode: the server
+          briefly handles the plaintext to encrypt it, then stores nothing but the same
+          content-free key material every message uses, which self-erases within about a
+          day. We keep a minimal "installed" marker per workspace — no message data.
+        </p>
+      </section>
+
+      <p class="how-cta"><a class="primary" href="/api/slack/oauth">Add to Slack</a></p>
+
+      <footer class="foot">Zero-knowledge · serverless · <a href="https://github.com/JohnnyPicklesInc/WhisperFox" rel="noopener">open source</a> · <a href="/how">How it works</a> · <a href="/privacy">Privacy</a></footer>
+    </main>
+  </body>
+</html>

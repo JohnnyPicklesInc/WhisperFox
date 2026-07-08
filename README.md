@@ -50,12 +50,20 @@ public/            static site (Cloudflare Pages)
   vendor/qrcodegen.js  vendored Nayuki QR encoder (MIT) — QR is generated in-browser
   style.css, favicon.svg, robots.txt, .well-known/security.txt
   _redirects, _headers (strict CSP)
+  slack.html       "Add to Slack" landing + honest per-mode security copy (no scripts)
 functions/         Cloudflare Pages Functions (the "Worker")
   _lib.js          server crypto: hourly KV root lifecycle, sign/verify, share, burn tombstones
   _http.js         shared JSON response helper
+  _slack.js        Slack request-signature verify + signed handoff/state tokens
+  _seal.js         server-side message seal (mirrors public/crypto.js sealMessage)
   api/create.js        POST /api/create   (edge rate-limit; optional API-key auth)
   api/share/[id].js    GET  /api/share/:id
   api/ad.js            GET  /api/ad   (server-side EthicalAds fetch, house fallback)
+  api/slack/command.js POST /api/slack/command  (the /whisperfox slash command)
+  api/slack/share.js   POST /api/slack/share    (relays a finished link back to Slack)
+  api/slack/oauth.js   GET  /api/slack/oauth    (public-distribution install)
+sdk/               @whisperfox/sdk — zero-knowledge npm client (seals locally)
+slack/manifest.json  Slack app manifest — create the Slack app from this
 scripts/
   selftest.mjs     node crypto self-test (no server, no network)
   smoke.mjs        HTTP smoke test against a running dev server
@@ -112,7 +120,7 @@ npm run deploy
 - **Comparison page facts**: `public/compare.html` states competitor facts "as
   of July 2026" — re-verify against their live sites occasionally.
 
-## API and CLI
+## API, SDK, and CLI
 
 `POST /api/create` needs no token — it's open and rate-limited at the edge, so
 scripts can call it directly. If you want authenticated callers to be exempt
@@ -146,6 +154,67 @@ echo "or pipe it in" | node scripts/cli.mjs --url https://your-domain --key "$WH
 
 Against local dev (`npm run dev`) no key is needed — `/api/create` is open and
 there is no rate limit locally.
+
+### SDK (`@whisperfox/sdk`)
+
+For app code, the `sdk/` package does the same local encryption as the CLI but as
+an importable, dependency-free library (Node ≥ 19, browsers, bundlers). The server
+never sees the plaintext — the SDK asks the API only for the id + share and seals
+the message in-process:
+
+```js
+import { createSecret } from '@whisperfox/sdk';
+const { link } = await createSecret('the wifi password is hunter2', {
+  ttl: 3600, burn: true, apiKey: process.env.WHISPERFOX_API_KEY,
+});
+```
+
+`sdk/crypto.js` is a deliberate mirror of `public/crypto.js`; `npm run selftest`
+asserts the two seals agree so they can't drift. See `sdk/README.md` for a runnable
+example and a GitHub Action snippet. Try it against local dev with
+`node sdk/example.mjs`.
+
+## Slack app
+
+`/whisperfox` brings the same idea into Slack, where secrets otherwise rot in
+scrollback forever. It is **safe by default**:
+
+- `/whisperfox` (default) — replies with a private button that opens the compose
+  page; the secret is typed and encrypted **in the browser** and posted back to the
+  channel on one click. Slack and the Worker never see the plaintext — same
+  zero-knowledge guarantee as the website.
+- `/whisperfox quick <secret>` — encrypts on the server for convenience and drops a
+  one-time link (burns on first read, 15-minute TTL) straight into the channel. This
+  path **does** send the text through Slack + the Worker briefly; the reply says so.
+  Add `phrase:<word>` to also require a separately-shared phrase.
+
+How it works: `_slack.js` verifies each request's Slack signature over the raw body
+(rejecting stale timestamps) and mints a signed, self-expiring context so the
+browser can post the finished link back via Slack's per-request `response_url` — so
+**no bot token is stored** and the only scope is `commands`. Interactivity is left
+off in the manifest, so the "Create a secret" URL button opens the browser without
+an interaction round-trip.
+
+### Setting up the Slack app
+
+1. At <https://api.slack.com/apps> → **Create New App → From an app manifest**, paste
+   `slack/manifest.json` (replace `whisperfox.pages.dev` with your domain).
+2. Copy the app's **Signing Secret** and OAuth **Client ID/Secret** into secrets:
+
+   ```bash
+   wrangler pages secret put SLACK_SIGNING_SECRET
+   wrangler pages secret put SLACK_STATE_SECRET   # long random; signs handoff + OAuth state
+   wrangler pages secret put SLACK_CLIENT_ID
+   wrangler pages secret put SLACK_CLIENT_SECRET
+   ```
+
+3. Install to a workspace via the **Add to Slack** button on `/slack` (the OAuth flow
+   at `/api/slack/oauth`). For public listing, submit the app to the Slack App
+   Directory (an external review step).
+
+Locally, set the same values in `.dev.vars` and expose `npm run dev` through a tunnel
+(`cloudflared tunnel --url http://localhost:8788`) so Slack can reach your slash
+command URL. Extend the WAF `/api/*` rate-limit rule to cover `/api/slack/*`.
 
 ## Key rotation
 

@@ -1,0 +1,35 @@
+{
+  "name": "@whisperfox/sdk",
+  "version": "0.1.0",
+  "description": "Create WhisperFox self-destructing links with zero-knowledge, in-process encryption. The server never sees your message.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Chris Whelan <johnnypicklespartners@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JohnnyPicklesInc/WhisperFox.git",
+    "directory": "sdk"
+  },
+  "homepage": "https://whisperfox.pages.dev",
+  "keywords": [
+    "whisperfox",
+    "secret",
+    "ephemeral",
+    "self-destruct",
+    "encryption",
+    "zero-knowledge",
+    "aes-gcm"
+  ],
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "crypto.js",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=19"
+  }
+}

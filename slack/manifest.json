@@ -1,0 +1,37 @@
+{
+  "_comment": "Slack app manifest for WhisperFox. Create the app at https://api.slack.com/apps > Create New App > From an app manifest, then paste this (replace whisperfox.pages.dev with your domain). Interactivity is intentionally OFF so the 'Create a secret' URL button opens the browser without your app needing to acknowledge an interaction. The only scope is 'commands' — results post back via Slack's per-request response_url, so no bot token or chat:write is needed.",
+  "display_information": {
+    "name": "WhisperFox",
+    "description": "Create self-destructing secrets that never touch a server.",
+    "background_color": "#0b1020"
+  },
+  "features": {
+    "slash_commands": [
+      {
+        "command": "/whisperfox",
+        "url": "https://whisperfox.pages.dev/api/slack/command",
+        "description": "Create a self-destructing secret",
+        "usage_hint": "[quick <secret>]",
+        "should_escape": false
+      }
+    ]
+  },
+  "oauth_config": {
+    "redirect_urls": [
+      "https://whisperfox.pages.dev/api/slack/oauth"
+    ],
+    "scopes": {
+      "bot": [
+        "commands"
+      ]
+    }
+  },
+  "settings": {
+    "org_deploy_enabled": true,
+    "socket_mode_enabled": false,
+    "interactivity": {
+      "is_enabled": false
+    },
+    "token_rotation_enabled": false
+  }
+}
