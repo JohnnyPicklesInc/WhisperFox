@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WhisperFox — send a secret that self-destructs</title>
+    <title>WhisperFox — send a self-destructing secret that expires on its own</title>
     <meta name="description" content="Encrypt a short message in your browser. It becomes a link that expires in 5 minutes to 24 hours. We store nothing about it." />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="canonical" href="https://whisperfox.pages.dev/" />
     <meta property="og:url" content="https://whisperfox.pages.dev/" />
-    <meta property="og:title" content="WhisperFox — send a secret that self-destructs" />
+    <meta property="og:title" content="WhisperFox — send a secret that expires on its own" />
     <meta property="og:description" content="Encrypt a short message in your browser. It becomes a link that expires in 5 minutes to 24 hours. We store nothing about it." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
@@ -27,7 +27,7 @@
         </label>
 
         <label class="field">
-          <span class="label">Self-destruct after <b id="ttlLabel">15 min</b></span>
+          <span class="label">Expires after <b id="ttlLabel">15 min</b></span>
           <!-- Index into STEPS in create.js: 5m/15m/30m/1h/4h/12h/24h. -->
           <input id="ttl" type="range" min="0" max="6" value="1" step="1" />
         </label>

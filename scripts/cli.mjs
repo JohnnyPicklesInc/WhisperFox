@@ -1,5 +1,5 @@
 /**
- * WhisperFox CLI — create a self-destructing link from the terminal.
+ * WhisperFox CLI — create an expiring link from the terminal.
  * Encryption happens HERE, in this process; the server never sees the
  * message (same split-key flow as the create page, see public/create.js).
  *

@@ -1,7 +1,7 @@
 # WhisperFox
 
 Ad-supported, serverless, zero-knowledge ephemeral messages. Write a secret
-(up to 500 characters), pick a self-destruct timer from 5 minutes to 24 hours,
+(up to 500 characters), pick an expiry timer from 5 minutes to 24 hours,
 optionally add a secret phrase and/or burn-after-first-read, and get a link.
 The message is encrypted in the browser; the server never sees the message,
 the key, or the phrase, and stores nothing about the message's content (the
@@ -204,7 +204,7 @@ outstanding links die once the overlap window passes.
   browser renders it as first-party HTML with no third-party JavaScript, so ad
   code can never read the decrypted secret. A strict CSP in `public/_headers`
   enforces this.
-- **Best-effort self-destruct.** Once decrypted, nothing can stop screenshots,
+- **Best-effort expiry.** Once decrypted, nothing can stop screenshots,
   copies, or a debugger-paused viewer. The countdown wipe and server-side
   share withholding cover the normal case, not a determined viewer.
 - **Message size** is enforced client-side (500 characters). The server never

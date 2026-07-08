@@ -12,7 +12,7 @@ import { json } from '../_http.js';
 export async function onRequestGet({ env }) {
   const house = {
     type: 'house',
-    text: '🦊 WhisperFox — send a secret that deletes itself.',
+    text: '🦊 WhisperFox — send a secret link that expires on its own.',
     link: '/',
     image: null,
     view_url: null,

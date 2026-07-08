@@ -1,6 +1,6 @@
 /**
  * Reveal page: parses /view#<id>~<iv.salt.urlKeyPart.ct>, fetches the server
- * key-share, decrypts in the browser, and runs the self-destruct countdown.
+ * key-share, decrypts in the browser, and runs the expiry countdown.
  */
 import { unb64u, xor, pbkdf2, aesDecrypt, webCryptoAvailable } from '/crypto.js';
 import { renderAd } from '/ad.js';

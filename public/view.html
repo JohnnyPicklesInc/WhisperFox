@@ -8,7 +8,7 @@
     <!-- Deliberately generic previews: link crawlers never see the #fragment,
          so there is nothing message-specific to leak — keep it that way. -->
     <meta property="og:title" content="WhisperFox — secret message" />
-    <meta property="og:description" content="Someone sent you a self-destructing message. It expires soon." />
+    <meta property="og:description" content="Someone sent you a secret message. It stops working when it expires — soon." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
     <link rel="stylesheet" href="/style.css" />
@@ -23,7 +23,7 @@
       <div id="ad" class="ad-slot" aria-label="advertisement"></div>
 
       <section id="gate" class="gate">
-        <p class="tagline">Someone sent you a self-destructing message.</p>
+        <p class="tagline">Someone sent you a secret message that expires on its own.</p>
         <p id="burnNotice" class="warn" hidden>This message can only be opened once — make sure you're ready before revealing it.</p>
         <div id="phraseWrap" hidden class="field">
           <span class="label">This message needs a secret phrase</span>
@@ -44,7 +44,7 @@
       <section id="expired" hidden class="expired">
         <div class="lock">⌛</div>
         <h2>Access denied — session expired</h2>
-        <p>This message has expired or the link is invalid. Nothing can be recovered.</p>
+        <p>This message has expired or the link is invalid. The server no longer hands out the key it needs, so it can't be opened.</p>
         <a class="primary" href="/">Create your own private link</a>
       </section>
 

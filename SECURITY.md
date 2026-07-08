@@ -15,5 +15,5 @@ WhisperFox is zero-knowledge: messages are encrypted in the browser and never
 reach the server, which stores no message content. A full server or KV breach
 therefore exposes **no messages** — see the "Security model and limits" section
 of the [README](README.md) for the full threat model, including the deliberate
-best-effort limits (burn-after-read, self-destruct) and the stolen-root-material
+best-effort limits (burn-after-read, expiry) and the stolen-root-material
 analysis.
