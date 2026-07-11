@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WhisperFox — send a secret that self-destructs</title>
-    <meta name="description" content="Encrypt a short message in your browser. It becomes a link that expires in 5 minutes to 24 hours. We store nothing about it." />
+    <title>WhisperFox — securely share passwords &amp; credentials that self-destruct</title>
+    <meta name="description" content="Share a password, API key, or other credential by link. It's encrypted in your browser and the link expires in 5 minutes to 24 hours. We store nothing about it." />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="canonical" href="https://whisperfox.pages.dev/" />
     <meta property="og:url" content="https://whisperfox.pages.dev/" />
-    <meta property="og:title" content="WhisperFox — send a secret that self-destructs" />
-    <meta property="og:description" content="Encrypt a short message in your browser. It becomes a link that expires in 5 minutes to 24 hours. We store nothing about it." />
+    <meta property="og:title" content="WhisperFox — securely share passwords &amp; credentials by link" />
+    <meta property="og:description" content="Share a password, API key, or other credential by link. It's encrypted in your browser and the link expires on its own. We store nothing about it." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
     <link rel="stylesheet" href="/style.css" />
@@ -17,17 +17,17 @@
   <body>
     <main class="card">
       <h1 class="brand">🦊 WhisperFox</h1>
-      <p class="tagline">Write a secret. Get a link that stops working after it expires. The message lives in the link — we never hold it anywhere.</p>
+      <p class="tagline">Secure secret sharing for IT, DevOps &amp; security teams. Encrypt a password or API key in your browser and send a link that expires on its own — we never store it anywhere.</p>
 
       <div id="compose">
         <label class="field">
-          <span class="label">Your message</span>
-          <textarea id="msg" maxlength="500" rows="5" placeholder="Type the secret you want to share…"></textarea>
+          <span class="label">Secret to share</span>
+          <textarea id="msg" maxlength="500" rows="5" placeholder="Paste a password, API key, or other credential…"></textarea>
           <span id="count" class="count">0/500</span>
         </label>
 
         <label class="field">
-          <span class="label">Self-destruct after <b id="ttlLabel">15 min</b></span>
+          <span class="label">Expires after <b id="ttlLabel">15 min</b></span>
           <!-- Index into STEPS in create.js: 5m/15m/30m/1h/4h/12h/24h. -->
           <input id="ttl" type="range" min="0" max="6" value="1" step="1" />
         </label>
@@ -39,7 +39,7 @@
           </label>
           <p id="phraseWarn" class="warn" hidden>Without a phrase, anyone who gets the link can read this message until it expires.</p>
           <div id="phraseRow">
-            <input id="phrase" type="text" autocomplete="off" placeholder="e.g. blue-otter-lamp" />
+            <input id="phrase" type="text" autocomplete="off" placeholder="e.g. clip-harbor-92" />
             <span class="hint">A word you make up for this message and share separately — <b>don't reuse a real password.</b></span>
           </div>
         </div>
@@ -57,7 +57,7 @@
 
       <div id="out" class="out" hidden>
         <h2 class="done-title">✓ Your secure link is ready</h2>
-        <p class="hint">Copy it and share it — the message is sealed inside the link.</p>
+        <p class="hint">Copy it and share it — the secret is sealed inside the link.</p>
         <div class="linkrow">
           <input id="link" class="link" readonly />
           <button id="copy" class="copy">Copy</button>
@@ -68,7 +68,8 @@
       </div>
 
       <div id="ad" class="ad-slot" aria-label="advertisement"></div>
-      <footer class="foot">Zero-knowledge · serverless · we never hold your message. <a href="/how">How it works &amp; FAQ</a> · <a href="/compare">Compare</a> · <a href="/privacy">Privacy</a></footer>
+      <p class="trust">Built for IT, DevOps &amp; security teams — zero-knowledge, open source, no accounts.</p>
+      <footer class="foot">Zero-knowledge · serverless · we never hold your secret. <a href="/how">How it works &amp; FAQ</a> · <a href="/compare">Compare</a> · <a href="/privacy">Privacy</a></footer>
     </main>
     <script type="module" src="/create.js"></script>
   </body>

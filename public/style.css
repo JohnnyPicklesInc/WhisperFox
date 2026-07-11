@@ -5,8 +5,8 @@
   --border: #2a3358;
   --text: #eef1fb;
   --muted: #9aa3c7;
-  --accent: #6d5efc;
-  --accent-2: #b15efc;
+  --accent: #2563eb;
+  --accent-2: #0891b2;
   --danger: #ff6b81;
   --ok: #4ade80;
   color-scheme: dark;
@@ -68,7 +68,7 @@ textarea, input[type='text'] {
   outline: none;
   resize: vertical;
 }
-textarea:focus, input[type='text']:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(109, 94, 252, 0.25); }
+textarea:focus, input[type='text']:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25); }
 
 .count { display: block; text-align: right; font-size: 12px; color: var(--muted); margin-top: 4px; }
 .count.over { color: var(--danger); }
@@ -143,6 +143,12 @@ input[type='range'] { width: 100%; accent-color: var(--accent); }
 .qr { display: flex; justify-content: center; margin: 14px 0 2px; }
 .qr svg { width: 240px; max-width: 70%; height: auto; border-radius: 10px; }
 
+.trust {
+  margin: 14px 0 0; padding: 9px 12px;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: var(--card-2); color: var(--muted);
+  font-size: 12px; text-align: center;
+}
 .foot { margin-top: 18px; color: var(--muted); font-size: 12px; text-align: center; }
 .foot a { color: var(--accent-2); }
 
