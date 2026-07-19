@@ -7,3 +7,19 @@
   Referrer-Policy: no-referrer
   X-Frame-Options: DENY
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
+
+# Marketing pages (no plaintext secrets in the DOM) allow the Cloudflare Web
+# Analytics beacon. The create page (/) and reveal page (/view) intentionally
+# stay on the strict baseline above — no third-party JS next to plaintext.
+/how
+  Content-Security-Policy: default-src 'self'; script-src 'self' static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' cloudflareinsights.com; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
+/how.html
+  Content-Security-Policy: default-src 'self'; script-src 'self' static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' cloudflareinsights.com; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
+/compare
+  Content-Security-Policy: default-src 'self'; script-src 'self' static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' cloudflareinsights.com; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
+/compare.html
+  Content-Security-Policy: default-src 'self'; script-src 'self' static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' cloudflareinsights.com; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
+/privacy
+  Content-Security-Policy: default-src 'self'; script-src 'self' static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' cloudflareinsights.com; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
+/privacy.html
+  Content-Security-Policy: default-src 'self'; script-src 'self' static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' cloudflareinsights.com; frame-ancestors 'none'; base-uri 'none'; form-action 'none'
