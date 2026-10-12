@@ -4,4 +4,4 @@ User-agent: *
 Allow: /
 Disallow: /view
 
-Sitemap: https://whisperfox.pages.dev/sitemap.xml
+Sitemap: https://whisper-fox.com/sitemap.xml
