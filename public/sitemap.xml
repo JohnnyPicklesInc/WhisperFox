@@ -3,22 +3,22 @@
      and its payload lives in the #fragment, which crawlers never receive). -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://whisperfox.pages.dev/</loc>
+    <loc>https://whisper-fox.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://whisperfox.pages.dev/how</loc>
+    <loc>https://whisper-fox.com/how</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://whisperfox.pages.dev/compare</loc>
+    <loc>https://whisper-fox.com/compare</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://whisperfox.pages.dev/privacy</loc>
+    <loc>https://whisper-fox.com/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
