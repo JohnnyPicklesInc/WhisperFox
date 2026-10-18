@@ -15,7 +15,8 @@
     "selftest": "node scripts/selftest.mjs",
     "smoke": "node scripts/smoke.mjs",
     "cli": "node scripts/cli.mjs",
-    "deploy": "wrangler pages deploy public"
+    "deploy": "wrangler pages deploy public",
+    "indexnow": "node scripts/indexnow.mjs"
   },
   "devDependencies": {
     "wrangler": "^3.90.0"
